@@ -1,0 +1,19 @@
+// Mutex y variables condicionales y continuar inicializado a false
+
+Proceso P1		
+...			
+accion1 ( )	
+lock (mutex);
+continuar=true;
+cond_signal(var_cond);
+unlock (mutex);
+
+
+Proceso P2
+...	
+lock (mutex);
+while(continuar != true) {
+  cond_wait(mutex, var_cond);
+}
+unlock (mutex);
+accion2 ()

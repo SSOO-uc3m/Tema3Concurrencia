@@ -1,0 +1,10 @@
+// con un semáforo s inicializado a 0
+Proceso P1		
+...			
+accion1 ( )	
+signal (s)
+
+Proceso P2
+...	
+wait (s)
+accion2 ( )	
