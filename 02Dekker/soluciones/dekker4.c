@@ -1,10 +1,11 @@
 /* compilar como gcc -pthread -o main main.c*/
 /* taskset 0x01 para ejecutarlo en un único procesador */
+#define _GNU_SOURCE // pthread_yield
 #include <stdio.h>  // printf
 #include <pthread.h>// pthread_create,pthread_exit
 #include <stdlib.h> // exit
 #include <sched.h> // pthread_yield
-#define _GNU_SOURCE // pthread_yield
+
 #define true 1
 #define false 0
 #define NUM_SUMADO 10000
@@ -18,7 +19,7 @@ typedef struct
 
 flag enSeccionCritica[2];
 
-/** 
+/**
 * Variable global con el valor acumulado donde se realiza la suma.
 * Hace las veces de variable compartida entre las dos hebras.
 */
@@ -34,20 +35,26 @@ long sumaN(long acumulador, int n) {
 
     for (i=0;i<n;i++){
        total += 1;
-        
     }
-    
+
     return total;
 }
 
 void entradaSeccionCritica(long numHebra){
+    //Simulamos que estamos dentro
+    enSeccionCritica[numHebra].valor = true;
+
     int otraHebra = 1-numHebra;
 
-    while(enSeccionCritica[otraHebra].valor==true)
-    pthread_yield();
-
-    // ¡Está libre! 
-    enSeccionCritica[numHebra].valor = true;
+    while(enSeccionCritica[otraHebra].valor==true){
+	//Dejamos pasar al otro...
+    	enSeccionCritica[numHebra].valor = false;
+    	// esperamos un momento
+    	pthread_yield();
+    	// y volvemos a intentarlo
+    	enSeccionCritica[numHebra].valor = true;
+    }
+    // está libre!
 }// entradaSeccionCritica
 
 void salidaSeccionCritica(long numHebra){
@@ -69,13 +76,13 @@ void *run(void *threadid){
     long tid = (long)threadid; // keep book of thread's id
     //printf("This is thread #%ld!\n", tid);
 
-    for (i=0;i<= NUM_VECES;i++){     
+    for (i=1;i<= NUM_VECES;i++){     
         entradaSeccionCritica(tid);
           suma_total = sumaN (suma_total, NUM_SUMADO);
         salidaSeccionCritica(tid);
-    
+
     }
-   
+
     pthread_exit(NULL);
 
 }
@@ -107,7 +114,7 @@ int main() {
     printf("Esperábamos %ld\n" , resultadoEsperado);
 
         if (suma_total != resultadoEsperado)
-            printf("¡¡¡NO COINCIDEN!!!");
+            printf("¡¡¡NO COINCIDEN!!!\n");
 
     //thread_exit(NULL);
     exit(0);

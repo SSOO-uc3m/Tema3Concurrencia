@@ -57,7 +57,7 @@ void *run(void *threadid){
     long tid = (long)threadid; // keep book of thread's id
     //printf("This is thread #%ld!\n", tid);
 
-    for (i=0;i<= NUM_VECES;i++){     
+    for (i=1;i<= NUM_VECES;i++){     
         entradaSeccionCritica(tid);
           suma_total = sumaN (suma_total, NUM_SUMADO);
         salidaSeccionCritica(tid);

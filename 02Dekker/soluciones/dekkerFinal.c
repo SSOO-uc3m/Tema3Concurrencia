@@ -22,31 +22,31 @@ long sumaN(long acumulador, int n) {
 
     for (i=0;i<n;i++){
        total += 1;
-        
-    }
-    
+ 
+  }
+
     return total;
 }
 
-void salidaSeccionCritica(long tid){
-    int otraHebra = 1-tid;
+void salidaSeccionCritica(long numHebra){
+    int otraHebra = 1-numHebra;
     turno = otraHebra;
-    enSeccionCritica[tid]=false;
+    enSeccionCritica[numHebra]=false;
 }
 
-void entradaSeccionCritica(long tid){
+void entradaSeccionCritica(long numHebra){
 
-    int otraHebra = 1-tid;
-    enSeccionCritica[tid]=true;
+    int otraHebra = 1-numHebra;
+    enSeccionCritica[numHebra]=true;
 
     while (enSeccionCritica[otraHebra]==true){
        if(turno==otraHebra){
-            enSeccionCritica[tid]=false;
-             while (turno==otraHebra);
-            enSeccionCritica[tid]=true;
+            enSeccionCritica[numHebra]=false;
+             while (turno==otraHebra); // espera activa
+            enSeccionCritica[numHebra]=true;
        }
-       else {;
-       }
+
+
      }//  while
     // Está libre!
 
@@ -55,34 +55,35 @@ void entradaSeccionCritica(long tid){
 void *run(void *threadid){
     int i;
     long tid = (long)threadid; // keep book of thread's id
-    printf("This is thread #%ld!\n", tid);
+    //printf("This is thread #%ld!\n", tid);
 
-    for (i=0;i<= NUM_VECES;i++){
+    for (i=1;i<= NUM_VECES;i++){
      enSeccionCritica[tid]=true;
-     
+
         //start critical section
         entradaSeccionCritica(tid);
         suma_total = sumaN (suma_total, NUM_SUMADO);
          //end critical section
         salidaSeccionCritica(tid);
-    
+
     }
-   
+
     pthread_exit(NULL);
 
 }
 int main() {
-    
-    
-   pthread_t threads[NUM_THREADS];
 
+
+   pthread_t threads[NUM_THREADS];
+ 
    int rc;
-   long t;
+   long t, resultadoEsperado;
+
    enSeccionCritica[0]=false;
    enSeccionCritica[1]=false;
 
    for(t=0; t<NUM_THREADS; t++){
-      printf("In main: creating thread %ld\n", t);
+      //printf("In main: creating thread %ld\n", t);
       rc = pthread_create(&threads[t], NULL, run, (void *)t);
       if (rc){
          printf("ERROR; return code from pthread_create() is %d\n", rc);
@@ -92,11 +93,16 @@ int main() {
 
     for(t=0; t<NUM_THREADS; t++)
         pthread_join(threads[t], NULL);
-    
 
-    printf("Suma=%ld\n", suma_total);
+    resultadoEsperado = NUM_SUMADO * NUM_VECES * 2;
+
+    printf("El resultado final es %ld\n",suma_total);
+    printf("Esperábamos %ld\n", resultadoEsperado);
+
+   if(suma_total != resultadoEsperado)
+	printf("¡No coinciden!\n");
 
     //thread_exit(NULL);
     exit(0);
 
-} 
+}
