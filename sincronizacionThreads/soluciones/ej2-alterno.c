@@ -1,5 +1,4 @@
-/* fichero alterno.c
-THREADS
+/* fichero alterno.c THREADS
 Crea 2 threads que ejecutan de forma alterna.
  compilar con  gcc -lpthread alterno.c
 José Manuel Pérez Lobato
@@ -13,49 +12,56 @@ José Manuel Pérez Lobato
 #include <sys/stat.h>
 #include <fcntl.h>
 
+const int NUMERO_MAX = 10;
+
 pthread_attr_t attr;
-pthread_t idth[10];
 pthread_mutex_t mtx;
 pthread_cond_t varcond;
-int turno=1;
+enum numeros {PARES, IMPARES};
 
-void *hilo1(void *num) {
+enum numeros turno= IMPARES;
+
+void *hiloImpares(void *arg) {
    int cont=1;
 
-while (cont <=10){
-   pthread_mutex_lock (&mtx);
-    while (turno!=1) pthread_cond_wait(&varcond, &mtx);
-    printf ("th1:%d\n", cont);
-    cont=cont+2;
-    turno = 2;
-    pthread_cond_signal(&varcond);
+   while (cont <=NUMERO_MAX){
+      pthread_mutex_lock (&mtx);
+   while (turno!=IMPARES) 
+      pthread_cond_wait(&varcond, &mtx);
+   printf ("thImpares:%d\n", cont);
+   cont=cont+2;
+   turno = PARES;
+   pthread_cond_signal(&varcond);
    pthread_mutex_unlock (&mtx);
-} 
+}
    pthread_exit(0);
-} 
-void *hilo2(void *num) {
+}
+
+void *hiloPares(void *arg) {
    int cont=2;
 
-while (cont <=10){
-   pthread_mutex_lock (&mtx);
-    while (turno!=2) pthread_cond_wait(&varcond, &mtx);
-    printf ("th2:%d\n", cont);
+   while (cont <=NUMERO_MAX){
+    pthread_mutex_lock (&mtx);
+    while (turno!=PARES) 
+	pthread_cond_wait(&varcond, &mtx);
+    printf ("thPares:%d\n", cont);
     cont=cont+2;
-    turno = 1;
+    turno = IMPARES;
     pthread_cond_signal(&varcond);
    pthread_mutex_unlock (&mtx);
-} 
+}
    pthread_exit(0);
-} 
+}
 
 int main(){
-   int i;
-   
+    int i;
+    pthread_t idth[2];
+
     pthread_mutex_init (&mtx, NULL); 
     pthread_attr_init(&attr);
-
-    pthread_create(&idth[0],&attr,hilo1,&i);
-    pthread_create(&idth[1],&attr,hilo2,&i);
+ 
+    pthread_create(&idth[0],&attr,hiloImpares,NULL);
+    pthread_create(&idth[1],&attr,hiloPares,NULL);
   // Espero la finalización del thread
     for (i=0; i<2; i++) 
       pthread_join(idth[i],NULL);

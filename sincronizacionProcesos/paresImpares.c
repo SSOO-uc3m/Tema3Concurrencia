@@ -13,7 +13,7 @@
 #include	<sys/wait.h>
 #include	<unistd.h>
 
-const int MAX = 10;
+const int MAX = 100;
 
 union semun {
 	int val;

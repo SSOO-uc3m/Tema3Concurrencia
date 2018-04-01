@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -24,7 +23,7 @@ void impares(void)
    for(i=0; i < 100; i++ ) {
        sem_wait(&impar);
            printf("Thread2 = %d \n", dato_compartido++);
-           sem_post(&par);
+       sem_post(&par);
    }
 }
 
