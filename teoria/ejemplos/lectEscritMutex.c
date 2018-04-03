@@ -7,7 +7,7 @@ int dato = 5;                   /* recurso */
 int n_lectores = 0;             /* numero de lectores */
 pthread_mutex_t mutex;          /* controlar el acceso a dato */
 pthread_mutex_t mutex_lectores;     /* controla acceso n_lectores */
-pthread_cond_t no_lectores;
+//pthread_cond_t no_lectores;
 
 void *escritor(void *arg) {   /* codigo del escritor */
    
@@ -48,7 +48,8 @@ int main(int argc, char *argv[])  {
     pthread_t thEscritores[3];
 
     pthread_mutex_init(&mutex, NULL);
-    pthread_cond_init(&no_lectores, NULL);
+    pthread_mutex_init(&mutex_lectores, NULL);
+    //pthread_cond_init(&no_lectores, NULL);
 
     for (i=0; i< 10; i++){
      pthread_create(&thLectores[i], NULL, lector, NULL);
@@ -74,7 +75,8 @@ int main(int argc, char *argv[])  {
     }
     
     pthread_mutex_destroy(&mutex);
-    pthread_cond_destroy(&no_lectores);
+    pthread_mutex_destroy(&mutex_lectores);
+    //pthread_cond_destroy(&no_lectores);
 
   exit(0);
 }
