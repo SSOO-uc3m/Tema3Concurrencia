@@ -4,59 +4,56 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define MAX         10      /* Numero máximo*/
-#define TRUE        1      
-#define FALSE       0      
 
-pthread_mutex_t mutex;     /* mutex para controlar el acceso al  
-                           buffer compartido */
-pthread_cond_t esperaPares;   /* controla la espera de los pares*/
-pthread_cond_t esperaImpares;   /* controla la espera de los impares*/
-//int turnoPares=FALSE;
-int turnoImpares=TRUE;
+const int NUMERO_MAX = 200;      /* Numero máximo*/
+enum numeros {PARES, IMPARES};
+
+pthread_mutex_t mutex;     /* mutex para controlar al turno compartido */
+pthread_cond_t espera;   /* controla la espera*/
+
+enum numeros turno = PARES;
 
 //para la barrera
-pthread_mutex_t mtx;     /* mutex para controlar el acceso a la barrera*/  
+pthread_mutex_t mtx;     /* mutex para controlar el acceso a la barrera*/
 pthread_cond_t esperaBarrera;   /* controla la espera de la barrera */
 int hilosespera=0;
+
 void barrera(){
         pthread_mutex_lock(&mtx);        /* acceder al buffer */
 	hilosespera++;
-        while (hilosespera<2 )  
+        while (hilosespera<2 )
             pthread_cond_wait(&esperaBarrera, &mtx); /* se bloquea */
-        pthread_cond_signal(&esperaBarrera);   
+        pthread_cond_signal(&esperaBarrera);
         pthread_mutex_unlock(&mtx);
 }
 
 
-void  *pares(void *kk)  {   /* codigo del que escribe los pares */
+void  *pares(void *arg)  {   /* codigo del que escribe los pares */
    int i;
 
-    for(i=2; i <= MAX; i=i+2 )  {
+    for(i=2; i <= NUMERO_MAX; i=i+2 )  {
         pthread_mutex_lock(&mutex);        /* acceder al buffer */
-        while (turnoImpares )  
-            pthread_cond_wait(&esperaPares, &mutex); /* se bloquea */
+        while (turno == IMPARES)
+            pthread_cond_wait(&espera, &mutex); /* se bloquea */
  	printf ("Pares: %d\n", i);
-	turnoImpares=TRUE;
-//	turnoPares=FALSE;
-        pthread_cond_signal(&esperaPares);   /* buffer no vacio */
+	turno=IMPARES;
+        pthread_cond_signal(&espera);
         pthread_mutex_unlock(&mutex);
     }
     barrera();
     printf ("FIN PARES\n");
     pthread_exit(0);
 }
-void  *impares(void *kk)  {   /* codigo del que escribe los pares */
+void  *impares(void *arg)  {   /* codigo del que escribe los pares */
    int i;
 
-    for(i=1; i <= MAX; i=i+2 )  {
+    for(i=1; i <= NUMERO_MAX; i=i+2 )  {
         pthread_mutex_lock(&mutex);        /* acceder al buffer */
-        while (!turnoImpares)  
-            pthread_cond_wait(&esperaPares, &mutex); /* se bloquea */
+        while (turno == PARES)
+            pthread_cond_wait(&espera, &mutex); /* se bloquea */
  	printf ("Impares: %d\n", i);
-	turnoImpares=FALSE;
-//	turnoPares=TRUE;
-        pthread_cond_signal(&esperaPares);   /* buffer no vacio */
+	turno = PARES;
+        pthread_cond_signal(&espera);   /* buffer no vacio */
         pthread_mutex_unlock(&mutex);
     }
     barrera();
@@ -72,8 +69,8 @@ int main(int argc, char *argv[]){
     pthread_cond_init(&esperaBarrera, NULL);
 
     pthread_mutex_init(&mutex, NULL);
-    pthread_cond_init(&esperaPares, NULL);
-    pthread_cond_init(&esperaImpares, NULL);
+    pthread_cond_init(&espera, NULL);
+
     pthread_create(&th1, NULL, pares, NULL);
     pthread_create(&th2, NULL, impares, NULL);
 
@@ -81,8 +78,7 @@ int main(int argc, char *argv[]){
     pthread_join(th2, NULL);
 
     pthread_mutex_destroy(&mutex);
-    pthread_cond_destroy(&esperaPares);
-    pthread_cond_destroy(&esperaImpares);
+    pthread_cond_destroy(&espera);
 
     exit(0);
 }

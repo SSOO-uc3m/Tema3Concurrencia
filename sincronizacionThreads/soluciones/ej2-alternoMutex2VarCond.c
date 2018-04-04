@@ -4,27 +4,26 @@ Su ejecución es alterna para que salgan ordenados
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define MAX         10      /* Numero máximo*/
-#define TRUE        1      
-#define FALSE       0      
+
+const int NUMERO_MAX = 200;      /* Numero máximo*/
+enum numeros {PARES, IMPARES};
+enum numeros turno = PARES;
 
 pthread_mutex_t mutex;     /* mutex para controlar el acceso al  
                            buffer compartido */
 pthread_cond_t esperaPares;   /* controla la espera de los pares*/
 pthread_cond_t esperaImpares;   /* controla la espera de los impares*/
-int turnoPares=TRUE;
-int turnoImpares=FALSE;
 
-void  *pares(void *kk)  {   /* codigo del que escribe los pares */
+
+void  *pares(void *arg)  {   /* codigo del que escribe los pares */
    int i;
 
-    for(i=0; i <= MAX; i+=2 )  {
+    for(i=0; i <= NUMERO_MAX; i+=2 )  {
         pthread_mutex_lock(&mutex);        /* acceder al buffer */
-        while (turnoPares == FALSE)  
+        while (turno == IMPARES)  
             pthread_cond_wait(&esperaPares, &mutex); /* se bloquea */
  	    printf ("Pares: %d\n", i);
-	    turnoImpares=TRUE;
-	    turnoPares=FALSE;
+	    turno = IMPARES;
         pthread_cond_signal(&esperaImpares);   /* buffer no vacio */
         pthread_mutex_unlock(&mutex);
     }
@@ -34,13 +33,12 @@ void  *pares(void *kk)  {   /* codigo del que escribe los pares */
 void  *impares(void *kk)  {   /* codigo del que escribe los pares */
    int i;
 
-    for(i=1; i <= MAX; i=i+2 )  {
+    for(i=1; i <= NUMERO_MAX; i=i+2 )  {
         pthread_mutex_lock(&mutex);        /* acceder al buffer */
-        while (turnoImpares == FALSE)  
+        while (turno == PARES)
             pthread_cond_wait(&esperaImpares, &mutex); /* se bloquea */
  	    printf ("Impares: %d\n", i);
-	    turnoImpares=FALSE;
-	    turnoPares=TRUE;
+	    turno = PARES;
         pthread_cond_signal(&esperaPares);   /* buffer no vacio */
         pthread_mutex_unlock(&mutex);
     }
@@ -55,6 +53,7 @@ int main(int argc, char *argv[]){
     pthread_mutex_init(&mutex, NULL);
     pthread_cond_init(&esperaPares, NULL);
     pthread_cond_init(&esperaImpares, NULL);
+
     pthread_create(&th1, NULL, pares, NULL);
     pthread_create(&th2, NULL, impares, NULL);
 
