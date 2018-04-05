@@ -31,7 +31,7 @@ void barrera(){
 void  *pares(void *arg)  {   /* codigo del que escribe los pares */
    int i;
 
-    for(i=2; i <= NUMERO_MAX; i=i+2 )  {
+    for(i=0; i <= NUMERO_MAX; i=i+2 )  {
         pthread_mutex_lock(&mutex);        /* acceder al buffer */
         while (turno == IMPARES)
             pthread_cond_wait(&espera, &mutex); /* se bloquea */
