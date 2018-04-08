@@ -63,11 +63,11 @@ void *receptor(void *param){
 void *servicio (void *p){
     peticion_t pet;
     copiar_peticion(&pet, (peticion_t*)p);
-    fprintf(stderr,"iniciando servicio peticion %d\n",pet.id);
+    fprintf(stderr,"iniciando servicio peticion \n");
     responder_peticion(&pet);
     sem_post(&snhijos);
 
-    fprintf(stderr,"Terminando servicio petición %d\n",pet.id);
+    fprintf(stderr,"Terminando servicio petición \n");
     pthread_exit(0);
     return NULL;
 

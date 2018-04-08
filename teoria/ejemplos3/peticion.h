@@ -6,7 +6,7 @@
 #include "stdlib.h" // rand, sleep
 
 struct peticion {
-   long id;
+   int id;
    /* Resto de campos necesarios */
    int tipo;
    char url[80];
@@ -25,14 +25,14 @@ static long petid = 0;
 void recibir_peticion (peticion_t * p)
 {
    int delay;
-   fprintf(stderr, "Recibiendo petición\n");
+   fprintf(stderr, "\tRecibiendo petición \n");
    p->id = petid++;
 
    /* Simulación de tiempo de E/S */
    delay = rand() % 5;
    sleep(delay);
 
-   fprintf(stderr,"Petición %d recibida después de %d segundos\n",
+   fprintf(stderr,"\tPetición %d recibida después de %d segundos\n",
          p->id, delay);
 }
 
@@ -40,7 +40,7 @@ void responder_peticion (peticion_t * p)
 {
   int delay, i;
   double x;
-  fprintf(stderr, "Enviando petición %d\n", p->id);
+  fprintf(stderr, "\tEnviando petición %d\n", p->id);
 
   /* Simulación de tiempo de procesamiento */
   for (i=0;i<1000000;i++) { x = 2.0 * i; }
@@ -49,7 +49,7 @@ void responder_peticion (peticion_t * p)
   delay = rand() % 20;
   sleep(delay);
 
-  fprintf(stderr, "Petición %d enviada después de %d segundos\n",
+  fprintf(stderr, "\tPetición %d enviada después de %d segundos\n",
        p->id, delay);
 }
 
