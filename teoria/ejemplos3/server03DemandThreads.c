@@ -48,11 +48,10 @@ void *receptor(void *param){
 	nservicio++;
 	pthread_create(&th_hijo, NULL, servicio, &p);
     }
-
+    printf("Esperando Threads\n");
     for(i=0; i<nservicio;i++) {
-	fprintf(stderr,"haciendo wait\n");
 	sem_wait(&snhijos);
-	fprintf(stderr,"Saliendo de wait\n");
+	printf("Termina un thread%d\n");
     }
 
     pthread_exit(0);
@@ -63,11 +62,11 @@ void *receptor(void *param){
 void *servicio (void *p){
     peticion_t pet;
     copiar_peticion(&pet, (peticion_t*)p);
-    fprintf(stderr,"iniciando servicio peticion \n");
+    printf("iniciando servicio peticion \n");
     responder_peticion(&pet);
-    sem_post(&snhijos);
+    sem_post(&snhijos); // aviso al hilo padre que termine 
 
-    fprintf(stderr,"Terminando servicio petición \n");
+    printf("Terminando servicio peticion \n");
     pthread_exit(0);
     return NULL;
 
