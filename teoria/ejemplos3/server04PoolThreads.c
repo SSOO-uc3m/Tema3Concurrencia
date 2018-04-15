@@ -79,7 +79,7 @@ void *receptor(void *param){
           buffer[pos] = p;
           pos = (pos+1) % MAX_BUFFER;
           n_elementos++;
-          pthread_cond_signal(&no_vacio);
+          pthread_cond_signal(&no_vacio); //despertamos a un hilo del pool
           pthread_mutex_unlock(&mutex);
      }
 
@@ -93,7 +93,6 @@ void *receptor(void *param){
     fprintf(stderr, "Finalizado receptor\n");
 
     pthread_exit(0);
-    printf("NULL\n");
 
 }
 
@@ -115,14 +114,12 @@ void *servicio (void *param){
            p = buffer[pos_servicio];
            pos_servicio = (pos_servicio + 1) % MAX_BUFFER;
            n_elementos --;
-           pthread_cond_signal(&no_lleno);
+           pthread_cond_signal(&no_lleno); // despertamos al receptor
            pthread_mutex_unlock(&mutex);
 
            responder_peticion(&p);
 
     }// bucle infinito
-
-    pthread_exit(0);
 
 }
 
